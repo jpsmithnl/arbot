@@ -1,0 +1,796 @@
+/**
+ * @fileoverview Helper functions for generating Arduino blocks which drive an iRobot Create
+ * @author jp.smith@mun.ca (Jordan Smith)
+ */
+'use strict';
+
+//define blocks
+if (!Blockly.Language) Blockly.Language = {};
+
+var iRobot_category_color = 40; //gold color, HSL Hue, 40/360
+
+Blockly.Language.irobot_sing = {
+  category: 'iRobot Actions',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+	this.appendDummyInput("")
+	    .appendTitle("Sing")
+      .appendTitle(new Blockly.FieldDropdown(
+			[['0', '0'],
+       ['1', '1'],
+       ['2', '2']]), 
+        "SONG");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setTooltip('Play a sequence of notes.');
+  }
+};
+
+Blockly.Language.irobot_move_straight = {
+  category: 'iRobot Actions',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+	this.appendDummyInput("")
+		.appendTitle("Move ")
+		.appendTitle(new Blockly.FieldDropdown(
+			[['forward', 'FORWARD'],
+       ['backward', 'BACKWARD']]), 
+        "MAGNITUDE");
+  this.appendDummyInput("")	
+    .setAlign(Blockly.ALIGN_RIGHT)
+    .appendTitle(new Blockly.FieldImage(
+      '../../media/irobot_front.png', 64, 64));
+    this.appendValueInput("DIST", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+	    .appendTitle("Distance (0 to 32767 mm)");    
+    this.appendValueInput("SPEED", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+	    .appendTitle("Speed (0 to 500 mm/s)");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setTooltip('Move robot in straight line for the defined distance.');
+  }
+};
+
+Blockly.Language.irobot_spin = {
+  category: 'iRobot Actions',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+	  this.appendDummyInput("")
+	    .appendTitle("Spin")
+		  .appendTitle(new Blockly.FieldDropdown(
+			 [['clockwise', 'CW'],
+        ['counter-clockwise', 'CCW']]), 
+         "SPIN_DIR");
+    this.appendValueInput("ANGLE", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+      .appendTitle("Angle (0 to 360 deg):");
+    this.appendValueInput("SPN_VEL", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+	    .appendTitle("Speed (0 to 500 mm/s)");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setTooltip('Stop and spin about the robot\'s center.');
+  }
+};
+
+Blockly.Language.irobot_curve = {
+  category: 'iRobot Actions',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+    this.appendDummyInput("")
+		  .appendTitle("Curve to the ")
+		  .appendTitle(new Blockly.FieldDropdown(
+			  [['forward', 'FORWARD'],
+         ['backward', 'BACKWARD']]), "SIGN")
+		  .appendTitle(new Blockly.FieldDropdown(
+			  [['right', 'RIGHT'],
+         ['left', 'LEFT']]), "HEADING");
+    this.appendDummyInput("")	
+      .setAlign(Blockly.ALIGN_RIGHT)
+	    .appendTitle(new Blockly.FieldImage(
+        '../../media/irobot_front.png', 64, 64));
+    this.appendValueInput("ANG", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+	    .appendTitle("Turn angle (0 to 360 deg):");
+    this.appendValueInput("RAD", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+	    .appendTitle("Turn radius (0 to 2000 mm):");
+    this.appendValueInput("SPN_VEL", Number)
+      .setAlign(Blockly.ALIGN_RIGHT)
+      .setCheck(Number)
+	    .appendTitle("Speed (0 to 500 mm/s)");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setTooltip('Move robot in a slow turn.');
+  }
+};
+
+Blockly.Language.irobot_set_motors = {
+  category: 'iRobot Actions',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+	this.appendDummyInput("")
+		.appendTitle("Motor speeds");
+	this.appendDummyInput("")	
+        .setAlign(Blockly.ALIGN_RIGHT)
+	    .appendTitle(new Blockly.FieldImage('../../media/irobot_front.png', 64, 64));
+    this.appendValueInput("LEFT", Number)
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number)
+	    .appendTitle("Left motor (-500 to 500 mm/s)");
+	 this.appendValueInput("RIGHT", Number)
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number)
+	    .appendTitle("Right motor (-500 to 500 mm/s)");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setTooltip('Set motor speeds directly.');
+  }
+};
+
+Blockly.Language.irobot_cliff_sensor = {
+  category: 'iRobot Sensors',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+	this.appendDummyInput("")
+	    .appendTitle("Cliff sensor");
+	this.appendValueInput("L", Number)
+        .appendTitle(new Blockly.FieldCheckbox('TRUE'), 'TOGGLE_L')
+	    .appendTitle("Left")
+		.appendTitle(new Blockly.FieldDropdown(
+			[['greater than', '>'],['equal to', '=='],
+			['less than', '<']]), "L_COMP")
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number);
+    this.appendValueInput("FL", Number)
+        .appendTitle(new Blockly.FieldCheckbox('TRUE'), 'TOGGLE_FL')
+	    .appendTitle("Center Left")
+		.appendTitle(new Blockly.FieldDropdown(
+			[['greater than', '>'],['equal to', '=='],
+			['less than', '<']]), "FL_COMP")
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number);
+    this.appendValueInput("FR", Number)
+        .appendTitle(new Blockly.FieldCheckbox('TRUE'), 'TOGGLE_FR')
+	    .appendTitle("Center Right")
+		.appendTitle(new Blockly.FieldDropdown(
+			[['greater than', '>'],['equal to', '=='],
+			['less than', '<']]), "FR_COMP")
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number);
+    this.appendValueInput("R", Number)
+        .appendTitle(new Blockly.FieldCheckbox('TRUE'), 'TOGGLE_R')
+	    .appendTitle("Right")
+		.appendTitle(new Blockly.FieldDropdown(
+			[['greater than', '>'],['equal to', '=='],
+			['less than', '<']]), "R_COMP")
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number);
+    this.setOutput(true, Boolean);
+    this.setTooltip('Sensor threshold conditions');
+  }
+};
+
+Blockly.Language.irobot_cliff_signal = {
+  category: 'iRobot Sensors',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+    this.appendDummyInput("")
+      .appendTitle(new Blockly.FieldDropdown(
+			  [['left', "LEFT"],
+         ['front left', "F_LEFT"],
+         ['front right', "F_RIGHT"],
+         ['right', "RIGHT"]]), "SENSOR")
+      .appendTitle("cliff sensor signal")
+    this.setOutput(true, Number);
+    this.setTooltip('Checks cliff sensor on robot\'s front');
+  }
+};
+
+Blockly.Language.irobot_variable_cliff_thresh = {
+  category: 'iRobot Sensors',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+    this.appendDummyInput("")
+      .appendTitle(new Blockly.FieldDropdown(
+			  [['left', "LEFT"],
+         ['front left', "F_LEFT"],
+         ['front right', "F_RIGHT"],
+         ['right', "RIGHT"]]), "SENSOR")
+      .appendTitle("sensor signal")
+      .appendTitle(new Blockly.FieldDropdown(
+			  [['greater than', '>'],['equal to', '=='],
+			  ['less than', '<']]), "SENS_COMP")
+      .appendTitle("dial")
+    this.setOutput(true, Boolean);
+    this.setTooltip('Checks cliff sensor on robot\'s front');
+  }
+};
+
+Blockly.Language.irobot_bumper = {
+  category: 'iRobot Sensors',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+	  this.appendDummyInput("")
+	    .appendTitle("Bump sensor");
+		this.appendDummyInput("")
+      .appendTitle("Right")
+      .appendTitle(
+      new Blockly.FieldCheckbox('TRUE'),'RIGHT')
+      .setAlign(Blockly.ALIGN_RIGHT);
+    this.appendDummyInput("")
+      .appendTitle("Left")
+      .appendTitle(
+      new Blockly.FieldCheckbox('TRUE'),'LEFT')
+      .setAlign(Blockly.ALIGN_RIGHT);
+    this.setOutput(true, Boolean);
+    this.setTooltip('Checks front bump sensor');
+  }
+};
+
+Blockly.Language.irobot_wall_sensor = {
+  category: 'iRobot Sensors',
+  helpUrl: '',
+  init: function() {
+    this.setColour(iRobot_category_color);
+    this.appendValueInput("WALL", Number)
+        .setAlign(Blockly.ALIGN_RIGHT)
+        .setCheck(Number)
+	      .appendTitle("Wall sensor reads higher than ")
+    this.setOutput(true, Boolean);
+    this.setTooltip('Checks wall sensor on robot\'s side');
+  }
+};
+
+Blockly.Language.irobot_halt = {
+  category: 'Control',
+  helpUrl: '',
+  init: function() {
+    // removing color makes block black
+    //this.setColour(iRobot_category_color); 
+	this.appendDummyInput("")
+	    .appendTitle("End program");
+    this.setPreviousStatement(true, null);
+    this.setTooltip('Stops program unless play button pressed. Program will loop forever if not used.');
+  }
+};
+
+// generator helper functions
+
+var roombaSetup = function() {
+  Blockly.Arduino.definitions_['include_roomba_lib'] = '#include <Roomba.h>\n';
+  Blockly.Arduino.definitions_['declare_roomba'] = "// Defines the Roomba instance and the HardwareSerial it connected to\nRoomba roomba(&Serial);\n"
+  Blockly.Arduino.setups_['init_roomba'] = "roomba.start();\n  roomba.fullMode();"
+}
+
+// Arduino code generators
+
+Blockly.Arduino.irobot_sing = function() {
+  roombaSetup();
+
+  var dropdown = this.getTitleValue("SONG");
+
+  Blockly.Arduino.definitions_['declare_songs'] = "uint8_t song0[] = {62, 12, 66, 12, 69, 12, 74, 36};\nuint8_t song1[] = {42, 25};\nuint8_t song2[] = {48, 6, 52, 6, 55, 6, 52, 6, 48, 6, 52, 6, 55, 6, 59, 6};\n";
+
+  var code = ["\n//// Sing",
+    "//",
+    "// 2 bytes per note",
+    "roomba.song(0, song0, sizeof(song0));",
+    "roomba.song(1, song1, sizeof(song1));",
+    "roomba.song(2, song2, sizeof(song2));",
+    "roomba.playSong("+dropdown+");",
+    "delay(1500);\n\n"].join("\n");
+
+
+  return code;
+};
+
+Blockly.Arduino.irobot_move_straight = function() {
+  roombaSetup();
+  
+  Blockly.Arduino.definitions_['proc_driveDistanceStraight'] = [
+    "void driveDistanceStraight( uint16_t dist_mm, uint16_t rad_mm, uint16_t vel_mm_s ){",
+    "",
+    "  //// Measured motion",
+    "  //",
+    "  ",
+    "  //dist_mm  - Drive distance in mm ",
+    "  ",
+    "  //rad_mm   - Radius of the turn in mm. ",
+    "  //         - (-2000 to 2000 mm) ",
+    "  //         - 32168=straight  ",
+    "  //         - 65535==clockwise   ",
+    "  //         - 1=counterclockwise",
+    "  ",
+    "  //vel_mm_s - Speed in mm/s ",
+    "  //         - (-500 to 500 mm/s) ",
+    "  ",
+    "  uint8_t distHO = dist_mm >> 8;",
+    "  uint8_t distLO = dist_mm & 0x00FF;",
+    "  ",
+    "  uint8_t radHO = rad_mm >> 8;",
+    "  uint8_t radLO = rad_mm & 0x00FF;",
+    "  ",
+    "  uint8_t velHO = vel_mm_s >> 8;",
+    "  uint8_t velLO = vel_mm_s & 0x00FF;",
+    "  ",
+    "  uint8_t drive_script[] = { 152, 13, // script header, len",
+    "                             137,/*drive*/ velHO, velLO, radHO, radLO,",
+    "                             156, /*wait for distance*/distHO,  distLO, ",
+    "                             137, 0, 0, 0, 0,  //stop (drive at vel=0mm/s)",
+    "                             153 }; ",
+    "                             // needs 'play script' opcode for some reason?",
+    "                             ",
+    "  roomba.script(drive_script, sizeof(drive_script)); ",
+    "  roomba.playScript();",
+    "  ",
+    "  // Ensure script has enough time to position robot ",
+    "  float linearTravelTime_s = float(int(dist_mm)) / float(int(vel_mm_s));",
+    "  int linearTravelTime_ms = abs( int( linearTravelTime_s * 1000.0 * 1.2) );",
+    "  delay(linearTravelTime_ms);",
+    "    ",
+    "}\n"].join("\n");
+
+  var dropdown = this.getTitleValue("MAGNITUDE");
+  var snap_dist = Blockly.Arduino.valueToCode(
+    this, 'DIST', Blockly.Arduino.ORDER_ATOMIC) || '100';  
+  var snap_vel = Blockly.Arduino.valueToCode(
+    this, 'SPEED', Blockly.Arduino.ORDER_ATOMIC) || '100';
+
+  var code = ["",
+    "driveDistanceStraight( "
+    + snap_dist + //dist_mm
+    ", roomba.DriveStraight, "
+    + snap_vel + //vel_mm_s
+    " );\n"].join("\n");
+
+  if (dropdown == "BACKWARD"){
+    // reverse signs in code
+    code = ["",
+      "driveDistanceStraight( -"
+      + snap_dist + //dist_mm
+      ", roomba.DriveStraight, -"
+      + snap_vel + //vel_mm_s
+      " );\n"].join("\n");
+  }
+
+  return code;
+};
+  
+Blockly.Arduino.irobot_spin = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_driveArcLength'] = ["",
+    "void driveArcLength( uint16_t ang_deg, uint16_t rad_mm, uint16_t vel_mm_s ){",
+    "",
+    "  //// Measured motion",
+    "  //",
+    "",
+    "  //ang_deg  - Angle in degrees ",
+    "  //         - off by ~ 5deg or so. ",
+    "  //         - clockwise needs negative angles.",
+    "",
+    "  //rad_mm   - Radius of the turn in mm.",
+    "  //         - (-2000 to 2000 mm)",
+    "  //         - 32168=straight",
+    "  //         - 65535==clockwise",
+    "  //         - 1=counterclockwise",
+    "",
+    "  //vel_mm_s - Speed in mm/s ",
+    "  //         - (-500 to 500 mm/s) ",
+    "", 
+    "",
+    "  uint8_t angHO = ang_deg >> 8;",
+    "  uint8_t angLO = ang_deg & 0x00FF;",
+    "",
+    "  uint8_t radHO = rad_mm >> 8;",
+    "  uint8_t radLO = rad_mm & 0x00FF;",
+    "",
+    "  uint8_t velHO = vel_mm_s >> 8;",
+    "  uint8_t velLO = vel_mm_s & 0x00FF;",
+    "",
+    "  uint8_t drive_script[] = { 152, 13,  // script header, len",
+    "                             137,/*drive*/ velHO, velLO, radHO, radLO,",
+    "                             157, /*wait for angle*/angHO,  angLO,",
+    "                             137, 0, 0, 0, 0,  //stop (drive at vel=0mm/s)",
+    "                             153 };",
+    "                             // needs 'play script' opcode for some reason?",
+    "",
+    "  roomba.script(drive_script, sizeof(drive_script)); ",
+    "  roomba.playScript();",
+    "",
+    "  // Ensure script has enough time to position robot ",
+    "",
+    "  int turn_rad = 140; //wheel radius",
+    "  //if not turning in place",
+    "  if (!((rad_mm == 0xFFFF) || (rad_mm == 1)))",
+    "    turn_rad = int(rad_mm);",
+    "  long turn_dist = angleToDistance(int(ang_deg), turn_rad);",
+    "  float angularTravelTime_s = float( turn_dist ) / float(int(vel_mm_s));",
+    "  long angularTravelTime_ms = abs( int( angularTravelTime_s * 1000.0 * 1.2 ) );",
+    "  // convert to ms and allow for slippage on turns ",
+    "  delay(angularTravelTime_ms);",
+    "",
+    "}",
+    "",
+    "long angleToDistance( int angle, int radius ){",
+    "      // arc(mm) = radius(mm) * angle(rad)",
+    "      //int wheel_rad = 130; //(mm)",
+    "      long arc = long(angle) * long(radius) * 2.0 * PI / 360.0 ;",
+    "      return arc;",
+    "}\n"].join("\n");
+
+  var dropdown = this.getTitleValue("SPIN_DIR");
+  var snap_ang = Blockly.Arduino.valueToCode(
+    this, 'ANGLE', Blockly.Arduino.ORDER_ATOMIC) || '90'; 
+  var snap_speed = Blockly.Arduino.valueToCode(
+    this, 'SPN_VEL', Blockly.Arduino.ORDER_ATOMIC) || '300'; 
+ 
+  var code = "";
+
+  if (dropdown == "CW"){
+    code = ["driveArcLength( -"
+    + snap_ang  //dist_mm
+    +", roomba.DriveInPlaceClockwise, "
+    + snap_speed //vel_mm_s
+    +" );\n"].join("\n");
+  }else{
+    // reverse signs/enum in code
+    code = ["driveArcLength( "
+    + snap_ang  //dist_mm
+    +", roomba.DriveInPlaceCounterClockwise, "
+    + snap_speed //vel_mm_s
+    +" );\n"].join("\n");
+  }
+  return code;
+};
+  
+Blockly.Arduino.irobot_curve = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_driveArcLength'] = ["",
+    "void driveArcLength( uint16_t ang_deg, uint16_t rad_mm, uint16_t vel_mm_s ){",
+    "",
+    "  //// Measured motion",
+    "  //",
+    "",
+    "  //ang_deg  - Angle in degrees ",
+    "  //         - off by ~ 5deg or so. ",
+    "  //         - clockwise needs negative angles.",
+    "",
+    "  //rad_mm   - Radius of the turn in mm.",
+    "  //         - (-2000 to 2000 mm)",
+    "  //         - 32168=straight",
+    "  //         - 65535==clockwise",
+    "  //         - 1=counterclockwise",
+    "",
+    "  //vel_mm_s - Speed in mm/s ",
+    "  //         - (-500 to 500 mm/s) ",
+    "", 
+    "",
+    "  uint8_t angHO = ang_deg >> 8;",
+    "  uint8_t angLO = ang_deg & 0x00FF;",
+    "",
+    "  uint8_t radHO = rad_mm >> 8;",
+    "  uint8_t radLO = rad_mm & 0x00FF;",
+    "",
+    "  uint8_t velHO = vel_mm_s >> 8;",
+    "  uint8_t velLO = vel_mm_s & 0x00FF;",
+    "",
+    "  uint8_t drive_script[] = { 152, 13,  // script header, len",
+    "                             137,/*drive*/ velHO, velLO, radHO, radLO,",
+    "                             157, /*wait for angle*/angHO,  angLO,",
+    "                             137, 0, 0, 0, 0,  //stop (drive at vel=0mm/s)",
+    "                             153 };",
+    "                             // needs 'play script' opcode for some reason?",
+    "",
+    "  roomba.script(drive_script, sizeof(drive_script)); ",
+    "  roomba.playScript();",
+    "",
+    "  // Ensure script has enough time to position robot ",
+    "",
+    "  int turn_rad = 140; //wheel radius",
+    "  //if not turning in place",
+    "  if (!((rad_mm == 0xFFFF) || (rad_mm == 1)))",
+    "    turn_rad = int(rad_mm);",
+    "  long turn_dist = angleToDistance(int(ang_deg), turn_rad);",
+    "  float angularTravelTime_s = float( turn_dist ) / float(int(vel_mm_s));",
+    "  long angularTravelTime_ms = abs( int( angularTravelTime_s * 1000.0 * 1.2 ) );",
+    "  // convert to ms and allow for slippage on turns ",
+    "  delay(angularTravelTime_ms);",
+    "",
+    "}",
+    "",
+    "long angleToDistance( int angle, int radius ){",
+    "      // arc(mm) = radius(mm) * angle(rad)",
+    "      //int wheel_rad = 130; //(mm)",
+    "      long arc = long(angle) * long(radius) * 2.0 * PI / 360.0 ;",
+    "      return arc;",
+    "}\n"].join("\n");
+
+
+  var dd_sign = this.getTitleValue("SIGN");
+  var dd_heading = this.getTitleValue("HEADING");
+  var snap_ang = Blockly.Arduino.valueToCode(
+    this, 'ANG', Blockly.Arduino.ORDER_ATOMIC) || '90'; 
+  var snap_rad = Blockly.Arduino.valueToCode(
+    this, 'RAD', Blockly.Arduino.ORDER_ATOMIC) || '500'; 
+  var snap_speed = Blockly.Arduino.valueToCode(
+    this, 'SPN_VEL', Blockly.Arduino.ORDER_ATOMIC) || '300';
+
+  var code = "";
+
+  if ((dd_sign == "FORWARD") && (dd_heading == "RIGHT")){
+    code = "driveArcLength( -"
+      + snap_ang
+      +", -"
+      + snap_rad
+      +", "
+      + snap_speed
+      +" );\n";
+  }
+  else if ((dd_sign == "BACKWARD") && (dd_heading == "RIGHT")){
+    code = "driveArcLength( "
+      + snap_ang
+      +", -"
+      + snap_rad
+      +", -"
+      + snap_speed
+      +" );\n";
+  }
+  else if ((dd_sign == "FORWARD") && (dd_heading == "LEFT")){
+    code = "driveArcLength( "
+      + snap_ang
+      +", "
+      + snap_rad
+      +", "
+      + snap_speed
+      +" );\n";
+  }
+  else if ((dd_sign == "BACKWARD") && (dd_heading == "LEFT")){
+    code = "driveArcLength( -"
+      + snap_ang
+      +", "
+      + snap_rad
+      +", -"
+      + snap_speed
+      +" );\n";
+  }
+
+  return code;
+};
+
+Blockly.Arduino.irobot_set_motors = function() {
+  roombaSetup();
+  var snap_right = Blockly.Arduino.valueToCode(
+    this, 'RIGHT', Blockly.Arduino.ORDER_ATOMIC) || '300'; 
+  var snap_left = Blockly.Arduino.valueToCode(
+    this, 'LEFT', Blockly.Arduino.ORDER_ATOMIC) || '300'; 
+
+  var code = "roomba.driveDirect ( "
+    +snap_left
+    +", "
+    +snap_right
+    +" );\n";
+  return code;
+};
+
+Blockly.Arduino.irobot_cliff_sensor = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_getTwoByteSensor'] = ["",
+    "uint16_t getTwoByteSensor( uint8_t packetID ){",
+    "  //uint8_t packetID = 28; ",
+    "  uint8_t dest[2];",
+    "  uint8_t len = 2;",
+    "  roomba.getSensors( packetID, &dest[0], len );",
+    "  uint16_t hob = dest[0] << 8;",
+    "  uint16_t lob = dest[1];",
+    "  uint16_t val = hob | lob;",
+    "  return val;",
+    "}\n"].join("\n");
+
+  var l_comp = this.getTitleValue("L_COMP");
+  var fl_comp = this.getTitleValue("FL_COMP");
+  var fr_comp = this.getTitleValue("FR_COMP");
+  var r_comp = this.getTitleValue("R_COMP");
+
+  var l = Blockly.Arduino.valueToCode(
+    this, 'L', Blockly.Arduino.ORDER_ATOMIC) || '300';
+  var fl = Blockly.Arduino.valueToCode(
+    this, 'FL', Blockly.Arduino.ORDER_ATOMIC) || '300';
+  var fr = Blockly.Arduino.valueToCode(
+    this, 'FR', Blockly.Arduino.ORDER_ATOMIC) || '300';
+  var r = Blockly.Arduino.valueToCode(
+    this, 'R', Blockly.Arduino.ORDER_ATOMIC) || '300';
+
+  var atoms = new Array();
+
+  if (this.getTitleValue('TOGGLE_L') == 'TRUE' ){
+    atoms.push("(getTwoByteSensor( "
+    +"roomba.SensoCliffLeftSignal ) "+l_comp+" "+l+")");
+  }
+
+  if (this.getTitleValue('TOGGLE_FL') == 'TRUE' ){
+    atoms.push("(getTwoByteSensor( "
+    +"roomba.SensoCliffFrontLeftSignal ) "+fl_comp+" "+fl+")");
+  }
+
+  if (this.getTitleValue('TOGGLE_FR') == 'TRUE' ){
+    atoms.push("(getTwoByteSensor( "
+    +"roomba.SensoCliffFrontRightSignal ) "+fr_comp+" "+fr+")");
+  }
+
+  if (this.getTitleValue('TOGGLE_R') == 'TRUE' ){
+    atoms.push("(getTwoByteSensor( "
+    +"roomba.SensoCliffRightSignal ) "+r_comp+" "+r+")");
+  }
+
+  var code = atoms.join(" && ")  
+
+  return [code, Blockly.Arduino.ORDER_ATOMIC];
+};  
+
+Blockly.Arduino.irobot_cliff_signal = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_getTwoByteSensor'] = ["",
+    "uint16_t getTwoByteSensor( uint8_t packetID ){",
+    "  //uint8_t packetID = 28; ",
+    "  uint8_t dest[2];",
+    "  uint8_t len = 2;",
+    "  roomba.getSensors( packetID, &dest[0], len );",
+    "  uint16_t hob = dest[0] << 8;",
+    "  uint16_t lob = dest[1];",
+    "  uint16_t val = hob | lob;",
+    "  return val;",
+    "}\n"].join("\n");
+
+  var dd_sensor = this.getTitleValue("SENSOR");
+  var code = "";
+
+  if (dd_sensor == "LEFT")
+    code = "getTwoByteSensor( roomba.SensoCliffLeftSignal ) ";
+  if (dd_sensor == "F_LEFT")
+    code = "getTwoByteSensor( roomba.SensoCliffFrontLeftSignal ) ";
+  if (dd_sensor == "F_RIGHT")
+    code = "getTwoByteSensor( roomba.SensoCliffFrontRightSignal ) ";
+  if (dd_sensor == "RIGHT")
+    code = "getTwoByteSensor( roomba.SensoCliffRightSignal ) ";
+
+  return [code, Blockly.Arduino.ORDER_ATOMIC];
+};
+
+Blockly.Arduino.irobot_variable_cliff_thresh = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_getTwoByteSensor'] = ["",
+    "uint16_t getTwoByteSensor( uint8_t packetID ){",
+    "  //uint8_t packetID = 28; ",
+    "  uint8_t dest[2];",
+    "  uint8_t len = 2;",
+    "  roomba.getSensors( packetID, &dest[0], len );",
+    "  uint16_t hob = dest[0] << 8;",
+    "  uint16_t lob = dest[1];",
+    "  uint16_t val = hob | lob;",
+    "  return val;",
+    "}\n"].join("\n");
+
+  var dd_sensor = this.getTitleValue("SENSOR");
+  var dd_sens_comp = this.getTitleValue("SENS_COMP");
+  var code = "";
+
+  if (dd_sensor == "LEFT")
+    code = "getTwoByteSensor( roomba.SensoCliffLeftSignal ) "
+      + dd_sens_comp +
+      "(map(analogRead(A0), 0, 1024, 0, 3500))";
+  if (dd_sensor == "F_LEFT")
+    code = "getTwoByteSensor( roomba.SensoCliffFrontLeftSignal ) "
+      + dd_sens_comp +
+      "(map(analogRead(A0), 0, 1024, 0, 3500))";
+  if (dd_sensor == "F_RIGHT")
+    code = "getTwoByteSensor( roomba.SensoCliffFrontRightSignal ) "
+      + dd_sens_comp +
+      "(map(analogRead(A0), 0, 1024, 0, 3500))";
+  if (dd_sensor == "RIGHT")
+    code = "getTwoByteSensor( roomba.SensoCliffRightSignal ) "
+      + dd_sens_comp +
+      "(map(analogRead(A0), 0, 1024, 0, 3500))";
+
+  return [code, Blockly.Arduino.ORDER_ATOMIC];
+};
+
+Blockly.Arduino.irobot_bumper = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_bump'] = ["",
+    "uint8_t getBumpSensors(){",
+    "  // Read bump sensors",
+    "  // returns 1=right, 2=left, 3=both;",
+    "  ",
+    "  // 5 bit number describing state of all bump&drop sensors",
+    "  uint8_t bdVal;",
+    "  ",
+    "  uint8_t bumpPacketId = 7;",
+    "  roomba.getSensors( bumpPacketId, &bdVal, 1 );",
+    "  ",
+    "  uint8_t bumps = bdVal & 3;",
+    "  ",
+    "  return bumps;",
+    "}\n"].join("\n");
+
+  var right_check = this.getTitleValue('RIGHT');
+  var left_check = this.getTitleValue('LEFT');
+  var code = "";
+
+  if  ((right_check == 'FALSE') && (left_check == 'FALSE'))  
+    code = "getBumpSensors() == 0x0"
+  if ((right_check == 'TRUE') && (left_check == 'FALSE'))  
+    code = "getBumpSensors() == 0x1"
+  if ((right_check == 'FALSE') && (left_check == 'TRUE'))  
+    code = "getBumpSensors() == 0x2"
+  if ((right_check == 'TRUE') && (left_check == 'TRUE'))     
+    code = "getBumpSensors() == 0x3";
+
+  return [code, Blockly.Arduino.ORDER_ATOMIC];
+};
+ 
+Blockly.Arduino.irobot_wall_sensor = function() {
+  roombaSetup();
+
+  Blockly.Arduino.definitions_['proc_getTwoByteSensor'] = ["",
+    "uint16_t getTwoByteSensor( uint8_t packetID ){",
+    "  //uint8_t packetID = 28; ",
+    "  uint8_t dest[2];",
+    "  uint8_t len = 2;",
+    "  roomba.getSensors( packetID, &dest[0], len );",
+    "  uint16_t hob = dest[0] << 8;",
+    "  uint16_t lob = dest[1];",
+    "  uint16_t val = hob | lob;",
+    "  return val;",
+    "}\n"].join("\n");
+
+  var snap_val = Blockly.Arduino.valueToCode(
+    this, 'WALL', Blockly.Arduino.ORDER_ATOMIC) || '30'; 
+
+  var code = "getTwoByteSensor( roomba.SensorWallSignal ) >"
+    + snap_val +"";
+
+  return [code, Blockly.Arduino.ORDER_ATOMIC];
+};
+
+Blockly.Arduino.irobot_halt = function() {
+  roombaSetup();
+
+  var code = ["//// END PROGRAM",
+    "//",
+    "//delay(500);// let things settle out",
+    "// set power LED orange",
+    "roomba.leds(ROOMBA_MASK_LED_NONE, 75, 75);",
+    "while(1){ // infinite loop",
+    "  // check for 'play' button",
+    "  delay(20);// but don't poll too often",
+    "  uint8_t isReset;",
+    "  roomba.getSensors( roomba.SensorButtons, &isReset, 1 );",
+    "  if( (isReset & 1) == 1) break;"
+    +"//restart if button pressed",
+    "};\n"].join("\n");
+
+  return code;
+};
