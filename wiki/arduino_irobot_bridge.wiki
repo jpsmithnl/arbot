@@ -1,0 +1,65 @@
+#summary iRobot Create - Arduino interface board
+#labels Featured
+= iRobot Create - Arduino interface board = 
+
+
+PCB to interface Arduino and iRobot Create 
+
+Created by Jordan Smith and Dr. Andrew Vardy at Memorial University of Newfoundland. Released as OSHW under [http://creativecommons.org/publicdomain/zero/1.0/legalcode  Creative Commons 0 - Public Domain] to promote educational and research use. 
+
+== Design resources ==
+
+CadSoft Eagle (Gratis): 
+
+  * [http://www.cadsoftusa.com/download-eagle]
+
+Dangerous Prototypes Parts library and tools (Public Domain / CC0): 
+
+  * [http://dangerousprototypes.com/docs/Dangerous_Prototypes_Cadsoft_Eagle_parts_library Parts library]
+
+  * [http://dangerousprototypes.com/docs/Dangerous_Prototypes_Tutorials Tutorials / Tools]
+
+  * [http://dangerousprototypes.com/docs/Eagle_Exporter_Script Eagle export script]
+
+Sparkfun parts library (CC v3.0 Share-Alike):
+  * [https://github.com/sparkfun/SparkFun-Eagle-Libraries]
+
+Adafruit parts library (Public Domain):
+  * [https://github.com/adafruit/Adafruit-Eagle-Library]
+
+== Schematic ==
+
+https://arbot.googlecode.com/svn/trunk/hardware/eagle_projects/arduino_irobot_bridge/doc/arduino_irobot_bridge.sch.png
+
+== PCB Gerber ==
+
+https://arbot.googlecode.com/svn/trunk/hardware/eagle_projects/arduino_irobot_bridge/doc/arduino_irobot_bridge.brd.png
+
+== Parts ==
+
+|| *Part* || *Quantity* || *Value* || *Package* || *Digikey/Sparkfun Part Number* ||
+||C1||1||100uF||CPOL-RADIAL-100UF-25V|| [http://www.digikey.com/product-detail/en/ECA-1VM101/P5165-ND/245024 P5165-ND]||
+||C2||1||1uF||C2.5-2|| [http://www.digikey.com/product-detail/en/FK16X7R1H105K/445-8356-ND/2815286 445-8356-ND]||
+||D1||1||LED-RGB-CC-THRUCLEAR||LED-RGB-THRU|| [http://www.digikey.ca/product-detail/en/WP154A4SUREQBFZGC/754-1615-ND/3084119 754-1615-ND]||
+||IC1||1||PT78HT205H||TO220-IGO||[http://www.digikey.com/product-search/en?vendor=0&keywords=PT78HT205H-ND PT78HT205H-ND]||
+||JP1||1||MPU6050||1X10_LOCK_LONGPADS||[https://www.sparkfun.com/products/11028 SEN-11028]||
+||JP2,JP3||2||-||1X03_LOCK_LONGPADS||-||
+||JP4,JP5||2||-||1X03_LONGPADS||-||
+||JP6||1||M01PTH||1X01||-||
+||JP7||1||-||1X05_LONGPADS||-||
+||JP8||1||Jumper||1X02||[http://www.digikey.com/product-detail/en/382811-8/A26228-ND/293121 A26228-ND]||
+||JP9||1||Jumper||1X02_LONGPADS||[http://www.digikey.com/product-detail/en/382811-8/A26228-ND/293121 A26228-ND]||
+||R1||1||10K ||TRIMMER_3306F||[http://www.digikey.ca/product-detail/en/3306F-1-103/3306F-103-ND/84666 3306F-103-ND]||
+||R2||1||10K_EVUF3A||EVUF||[http://www.digikey.com/product-detail/en/EVU-F3AF30B14/P3A1103-ND/243597 P3A1103-ND]||
+||R3,R4,R7||3||200OHM||0207/12||[http://www.digikey.ca/product-detail/en/MFR-25FBF52-200R/200XBK-ND/12855 200XBK-ND]||
+||R5,R6||2||110OHM||0207/12||[http://www.digikey.ca/product-detail/en/MFR-25FBF52-110R/110XBK-ND/12804 110XBK-ND]||
+||S1||1||2P2T||2P2T||-||
+||T1||1||2N2907||TO92-EBC||[http://www.digikey.ca/product-detail/en/P2N2907A/P2N2907A-ND/1485035 P2N2907A-ND]||
+||U$1,U$2,U$3||3||-||DP10080_V1||-||
+||U1||1||LCD-16X2||LCD-16X2||[https://www.sparkfun.com/products/790 LCD-00790]||
+||U1-A||1||1x16||FEMALE_HEADER||[https://www.sparkfun.com/products/115 PRT-00115]||
+||U2||1||ARDUINO_UNO||DUEMILANOVE||[https://www.sparkfun.com/products/11021 DEV-11021]||
+||U2-A||2||1x06||STACKABLE_FEM_HEADER||[https://www.sparkfun.com/products/9280 PRT-09280]||
+||U2-B||2||1x08||STACKABLE_FEM_HEADER||[https://www.sparkfun.com/products/9279 PRT-09279]||
+||USB_HUB_PWR||1||MOLEX M02 POLAR||MOLEX-1X2||-||
+||X1||1||-||M25VP||[http://www.digikey.ca/product-detail/en/171-025-113R011/5225ME-ND/858140 5225ME-ND]||

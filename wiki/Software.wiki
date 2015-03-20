@@ -1,0 +1,30 @@
+#summary Software installation.
+
+= Introduction =
+
+This page describes the software requirements for different ARbot configurations.
+
+= Configuration 1 (Arduino Only, No Computer) =
+
+TBD
+
+= Configuration 2 (Arduino + Computer) =
+
+Installation Checklist:
+  * Ubuntu 13.04
+  * [http://wiki.ros.org/hydro/Installation/Ubuntu ROS Hydro]
+    * Desktop Full install
+  * Additional ROS packages which can be installed as standard Ubuntu packages:
+    * ros-hydro-rosserial
+    * ros-hydro-rosserial-arduino
+    * ros-hydro-rosserial-python
+  * The following components are needed to interact with the Gazebo simulator
+    * ros-hydro-gazebo-ros-pkgs
+    * ros-hydro-gazebo-ros-control
+  * The following components are needed for AprilTags
+    * ros-hydro-rosjava
+  * The following components are required to write code for the Arduino (not needed for COMP4766/6778?)
+    * [http://arduino.cc/en/Main/Software Arduino IDE]
+    * Follow step 3.3 on [http://wiki.ros.org/rosserial_arduino/Tutorials/Arduino%20IDE%20Setup this page]
+
+Configuration for USB devies:

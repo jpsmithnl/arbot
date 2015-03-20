@@ -1,0 +1,68 @@
+#summary How to get ROS talking to your Arduino
+
+_Disclaimers:_ 
+  * _this wiki is not intended to cover ROS or Arduino IDE installation on your system_.^*^
+  * _creators not responsible for any damage resulting from attempting these instructions_
+
+^*^  ,,If you're doing that best I've got are these chickenscratch ,, [ROSinstall notes from installing Groovy and rosserial_arduino] .
+
+<br>
+
+= First Step: Check that your hardware works =
+
+== Blink ==
+At this point we will just test the operation of the Arduino connected to your computer.  The irobot_arduino_bridge is not required yet.  Just connect the Arduino board to your computer with a USB cable.
+
+Use the internal LED on pin 13 to run Blink example in the Arduino IDE:<br> File > Examples > Basics > Blink. <br>
+Blink should work from USB. <br>
+You can move on to the [http://wiki.ros.org/rosserial_arduino/Tutorials/Blink ROS blink example] from here. <br>
+
+== Servo ==
+
+If you want to test something with a continuous output or something you've connected to your Arduino, try a servo.
+
+Hobby servos have 3 pins, usually in the order of: <br>
+|| (-) || Ground  || *Black* or <font color="brown">*Brown*</font> ||
+|| (+) || Power ||  Almost universally <font color="red">*Red*</font> ||
+|| (s) || Signal ||  <font color="gold">*Yellow*</font>, <font color="orange">*Orange*</font>, <font color="blue">*Blue*</font>, <font color="red">*Red*</font>, *Black*, or <font color="black">White</font> ||
+
+Connect them like this:<br>
+<img src="http://wiki.ros.org/rosserial_arduino/Tutorials/Servo%20Controller?action=AttachFile&do=get&target=arduino_servo.png" width="350px" height="250px">
+
+On the [arduino_irobot_bridge] the Ground pin faces the iRobot DB-25 connector, SRV1 is connected to pin 10 and SRV0 is connected to pin 9.
+
+Open up the Servo example in the Arduino IDE:<br>
+File > Examples > Servo > Sweep<br>
+Click 'Upload' (->)<br>
+Servo should now sweep back and forth when power is applied<br>
+
+== Troubleshooting the servo ==
+Check that the line `myservo.attach(9);` references the right pin. <br> 
+If using [arduino_irobot_bridge] remove the jumpers to ensure programming lines are not interfered with and peripherals are not drawing power. <br>
+The Arduino needs enough juice to power your motors, the USB port may not be enough. Try plugging it into a 9V DC supply via the barrel jack or VIN/GND pins. If using [arduino_irobot_bridge] plug it into the iRobot and turn it on.<br>
+Try the Blink example.<br>
+<br>
+
+= ROS =
+Connection achieved through [http://wiki.ros.org/rosserial/ rosserial] and [http://wiki.ros.org/rosserial_arduino rosserial_arduino]. Check out [http://wiki.ros.org/rosserial_arduino/Tutorials/ their tutorials] for more information. I'd suggest starting with [http://wiki.ros.org/rosserial_arduino/Tutorials/Blink blink] then the [http://wiki.ros.org/rosserial_arduino/Tutorials/Servo%20Controller servo tutorial]. Only note to add to their wonderful tutorial is that I needed to use `/dev/ACM0` rather than `/dev/USB0` and that you may occasionally get permission errors which can be fixed with `chmod`. Serial communication errors in the Arduino IDE can sometimes be fixed by replugging the USB or resetting the port.
+
+= MPU6050 =
+The [arduino_irobot_bridge] is designed to hold a [https://www.sparkfun.com/products/11028 Sparkfun MPU6050 breakout board] and you might want to use this in ROS. <br>
+The library to use is [https://github.com/jrowberg/i2cdevlib  jrowberg's i2clib] in conjunction with [http://wiki.ros.org/rosserial_arduino rosserial_arduino]. <br>
+<br>
+To download it use <br>
+  {{{git clone https://github.com/jrowberg/i2cdevlib.git}}}<br>
+then look at <br>
+  {{{i2cdevlib / Arduino / MPU6050 / Examples / MPU6050_raw}}}<br>
+or get the slightly modified version here:
+  [https://code.google.com/p/arbot/source/browse/trunk/software/Arduino/MPU6050_raw/]
+
+Notes:
+ * Just get [https://code.google.com/p/arbot/source/browse/trunk/software/Arduino/MPU6050_raw/ the version from this SVN] load the MPU6050_raw.ino, upload (->) and check the serial monitor [,0]. You should see some data scroll by if your baud rate is at 9600
+ * If you got the original you might have to reorganize the project to link the dependencies in Arduino. 
+ * The baud rate is not the default 9600 in the stock example, but you can change it by replacing the appropriate line with `Serial.begin(9600);`  
+ * Using this lib and [http://wiki.ros.org/rosserial_arduino rosserial_arduino] you can pipe the data from `accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);` to `ros::Publisher.publish()` and access it from ROS
+ * You might want to try piping this to turtlebot's [https://kforge.ros.org/turtlebot/trac/browser/turtlebot/turtlebot_node/src/turtlebot_node/gyro.py  gyro.py] if using turtlebot but I haven't tested this yet
+ * See [http://wiki.ros.org/rosserial_arduino/Tutorials/Hello%20World the publishing tutorial] for more
+
+ 

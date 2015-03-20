@@ -1,0 +1,18 @@
+#summary Some improvements to keep in mind for the next version of the arduino_irobot_bridge
+
+  * Investigate vertical placement of board to leave more free space in Create's main cavity for an alternative gripper mechanism.
+  * Add studier headers to connect to Arduino
+  * Fix connectivity to MPU 6050 board (generic vs. Sparkfun)
+  * Add more labels on the board (e.g. to indication orientation for the Servo connectors)
+  * Find a more stable position for the regulator, possibly incorporating heat sink
+  * Provide an elevated reset button for the Arduino
+  * Put LCD on a ribbon cable so that it can be seen even when a netbook is installed on top of the Create (if we did this then the Arduino could go on top, as opposed to below)
+  * Changes to accomodate Mega ADK versus UNO
+    * Use another serial pair to connect to Create
+    * Eliminate switch and transistor
+    * Move I2C lines from A4/A5 to 20/21
+    * Move servo connectors to accomodate larger Mega ADK board
+  * Possible further improvements:
+    * Connections for Lego NXT sensors (e.g. IRSeeker)
+    * Consider direct analog connection from gyro (it would have to be a different gyro) to the Create
+    * Possibly include additional components to drive solenoid for kicking mechanism

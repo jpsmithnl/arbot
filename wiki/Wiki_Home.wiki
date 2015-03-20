@@ -1,0 +1,53 @@
+#summary Wiki Homepage
+
+= ARbot =
+
+An ARbot is a robot developed at Memorial University for education and research.  "AR" represents the Autonomous Robotics course, COMP 4766/6778.  This robot is also used for outreach activities such as the [http://www.mun.ca/science/community/enrichment.php mini course enrichment program].  Since we use the ARbots for many different activities, there are different configurations of components.  We will make reference to the following configurations:
+
+== Configuration 0 ==
+
+Consists of just the Arduino UNO connected to a computer with a working copy of the Arduino IDE.  Okay, so this is not really a robot, but its a good starting point.
+
+INSERT PICTURE
+
+== Configuration 1 ==
+
+Consists of the iRobot Create, connected to the arduino_irobot_bridge, which is connected to the Arduino UNO.  A short USB extender cable is used so that the Arduino can be programmed by connecting to the computer, then disconnected and tested.
+
+INSERT PICTURE
+
+== Configuration 2 ==
+
+Builds on Configuration 1 but incorporates a netbook computer, resting on top of the iRobot Create.  The netbook is connected through two different USB cables to both the Arduino UNO and the iRobot Create.
+
+INSERT PICTURE
+
+== Further Configurations ==
+
+We can build on Configuration 2 by incorporating various sensors and actuators.  Right now we have laser range finders as external sensors and a servo connected to a gripper as an actuator.  Incorporating these two components gives us the following:
+
+INSERT PICTURE
+
+= Hardware =
+
+The arduino_irobot_bridge is a printed circuit board we developed to fulfill the following roles:
+  * Draw power from the iRobot Create to supply the Arduino UNO and servo motor connections
+  * Provide mounting points, power, and connectivity for the following devices which can be programmed and interfaced through the Arduino
+    * MPU 6050 Inertial Measurement Unit (IMU): Used to help determine the robot's relative motion
+    * RGB LED: A bright and colourful light, for signalling or just for fun!
+    * Potentiometer (i.e. the tall knob): Used for manual adjustments
+    * Switch: The bridge can either talk to the robot or to the Arduino.  The switch is used to control this.
+
+_Released as OSHW under Creative Commons 0 - Public Domain to promote educational and research use._
+
+[arduino_irobot_bridge PCB to interface Arduino and iRobot Create]
+
+= Software =
+[iRobot_BlocklyDuino]
+
+[iRobot_Arduino_ROS]
+
+
+= Contributors =
+
+Created by Jordan Smith and Dr. Andrew Vardy at Memorial University of Newfoundland.

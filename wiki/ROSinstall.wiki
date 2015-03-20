@@ -1,0 +1,77 @@
+#summary Chickenscratch notes from installing Groovy and rosserial_arduino
+
+{{{
+sudo apt-get install subversion
+
+#packages not recognized, maybe due to update to groovy/catkin?
+svn checkout http://brown-ros-pkg.googlecode.com/svn/trunk/ brown-ros-pkg-read-only
+wget akutech.com/CS2951A/source/ROSfromScratch.zip
+unzip ROSfromScratch.zip
+rm ROSfromScratch.zip
+
+sudo apt-get -y install aptitude
+sudo aptitude -y install scratch
+
+mkdir -p ~/ROSworkspace/src
+cd ~/ROSworkspace/src
+catkin_init_workspace
+cs ..
+catkin_make
+
+wget akutech.com/CS2951A/source/ros_scratch_bridge.zip
+unzip ros_scratch_bridge.zip
+rm ros_scratch_bridge.zip
+rm -rf __MACOSX/
+
+yes | sudo apt-get install ros-groovy-rqt
+yes | sudo apt-get install ros-groovy-laser-drivers# (for hokuyo_node)
+
+yes | sudo apt-get install ros-groovy-rqt ros-groovy-rqt-common-plugins ros-groovy-turtlesim
+
+## Scratch install notes suggest installing Brown's package from Google Code, however, it requires more setup than they mention, better to get '/distribution' content from packaging tool as below. '/experimental' content only available from Google Code SVN.
+
+yes | sudo apt-get install ros-groovy-brown-drivers #(for irobot_create_2_1)
+yes | sudo apt-get install ros-groovy-brown-remotelab #(for teleop_twist_keyboard )
+yes | sudo apt-get install ros-groovy-brown-perception #(not required)
+
+
+sudo apt-get -y install python-rosdep # may not be necessary in new versions
+sudo rosdep init
+rosdep update
+
+# only add ros components to .bashrc once! Needs check if scripted. 
+echo "source /opt/ros/groovy/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+yes | sudo apt-get install python-rosinstall
+yes | sudo apt-get install ros-groovy-rosserial
+
+yes | sudo apt-get install arduino
+sudo usermod -a -G dialout "$(whoami)"
+# need to log out and back in for this to take effect or serial port will be blocked and arduino unuseable
+
+cd ~/ROSworkspace/src
+mv ros_scratch_bridge/CMakeLists.txt CMakeLists_old.txt
+catkin_create_pkg ros_scratch_bridge rospy geometry_msgs ar_recog irobot_create_2_1
+
+## ROSserial setup for Arduino
+# setup rosserial in ROS
+~/ROSworkspace/src
+git clone https://github.com/ros-drivers/rosserial.git
+cd ..
+catkin_make
+catkin_make install
+source ./install/setup.bash
+#
+# setup Arduino, should now have roslib examples
+mkdir -p ~/sketchbook/libraries
+cd ~/sketchbook/libraries
+rm -rf ros_lib
+rosrun rosserial_arduino make_libraries.py .
+
+# Squeak for Scratch
+yes | sudo aptitude install squeak-vm
+yes | sudo aptitude install squeak-image3.9
+yes | sudo aptitude install squeak-plugin-image
+yes | sudo aptitude install squeak-plugins-scratch-dbg 
+}}}
